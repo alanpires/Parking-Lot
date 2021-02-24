@@ -5,7 +5,7 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserSerializerLogin
 import ipdb
 
 
@@ -25,7 +25,7 @@ class AccountsView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserSerializerLogin(data=request.data)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
