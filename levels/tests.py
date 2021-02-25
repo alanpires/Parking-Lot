@@ -143,7 +143,7 @@ class TestLevelView(TestCase):
                 "available_bike_spots": 20,
                 "available_car_spots": 30
                 }
-            }
+        }
         
         # create admin user
         client.post('/api/accounts/', self.admin_data, format='json')
@@ -157,5 +157,62 @@ class TestLevelView(TestCase):
         response = client.post('/api/levels/', level_data, format='json')
 
         level = response.json()
-
+        
         self.assertDictContainsSubset(level, output_format_data)
+
+    def test_get_output_format_level(self):
+        client = APIClient()
+
+        level_data_1 = {
+            "name": "floor 1",
+            "fill_priority": 5,
+	        "bike_spots": 20,
+	        "car_spots": 50
+        }
+
+        level_data_2 = {
+            "name": "floor 2",
+            "fill_priority": 3,
+	        "bike_spots": 10,
+	        "car_spots": 30
+        }
+
+        output_format_data = [
+            {
+                "id": 1,
+                "name": "floor 1",
+                "fill_priority": 5,
+                "available_spots": {
+                    "available_bike_spots": 20,
+                    "available_car_spots": 50
+                    }
+                },
+            {
+                "id": 2,
+                "name": "floor 2",
+                "fill_priority": 3,
+                "available_spots": {
+                    "available_bike_spots": 10,
+                    "available_car_spots": 30
+                    }
+                }
+            ]
+        
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get admin login
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create two level with admin credentials
+        client.post('/api/levels/', level_data_1, format='json')
+        client.post('/api/levels/', level_data_2, format='json')
+
+        response = client.get('/api/levels/', format='json')
+
+        level = response.json()
+        
+        self.assertListEqual(level, output_format_data)
+        self.assertEqual(response.status_code, 200)
