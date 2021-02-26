@@ -14,4 +14,4 @@ class VehicleSerializer(serializers.Serializer):
     arrived_at = serializers.CharField(read_only=True)
     paid_at = serializers.CharField(read_only=True)
     amount_paid = serializers.IntegerField(read_only=True)
-    spot = SpotSerializer()
+    spot = SpotSerializer(read_only=True)

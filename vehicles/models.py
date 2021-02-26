@@ -13,4 +13,4 @@ class Vehicle(models.Model):
     arrived_at = models.CharField(max_length=255, blank=True, null=True)
     paid_at = models.CharField(max_length=255, blank=True, null=True)
     amount_paid = models.IntegerField(blank=True, null=True)
-    spot = models.OneToOneField(Spot, on_delete=models.CASCADE, primary_key=True)
+    spot = models.OneToOneField(Spot, on_delete=models.CASCADE)
