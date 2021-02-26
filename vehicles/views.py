@@ -2,11 +2,12 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import VehicleSerializer
+from .serializers import VehicleSerializer, ExitVehicleSerializer
 from .models import Vehicle, Spot
 from levels.models import Level
 from pricings.models import Pricing
-from .services import select_level_priority
+from .services import select_level_priority, calculate_amount_paid, timestamp, increase_level_available_spot
+from django.core.exceptions import ObjectDoesNotExist
 import ipdb
 
 class VehicleView(APIView):
@@ -21,6 +22,7 @@ class VehicleView(APIView):
         pricing = Pricing.objects.count()
 
         if level_priority is not None and pricing:
+            timestamp_inicial = timestamp()
             spot = Spot.objects.create(
                 variety = request.data['vehicle_type'],
                 level = level_priority
@@ -29,7 +31,7 @@ class VehicleView(APIView):
             vehicle = Vehicle.objects.get_or_create(
                 vehicle_type = request.data['vehicle_type'],
                 license_plate = request.data['license_plate'],
-                arrived_at = "2021-01-25T17:16:25.727541Z",
+                arrived_at = timestamp_inicial,
                 paid_at = None,
                 amount_paid = None,
                 spot = spot
@@ -54,3 +56,38 @@ class VehicleView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    def put(self, request, vehicle_id=''): 
+        if vehicle_id:
+
+            try:
+                timestamp_end = timestamp()
+                vehicle = Vehicle.objects.get(id=vehicle_id)
+
+                vehicle.paid_at = timestamp_end
+                vehicle.amount_paid = calculate_amount_paid(vehicle.arrived_at, timestamp_end)
+                vehicle.save()
+
+                spot = Spot.objects.get(id=vehicle.spot.id)
+                increase_level_available_spot(vehicle.vehicle_type, spot.level)
+                spot.delete()
+
+                vehicle = Vehicle.objects.get(id=vehicle_id)
+
+                serializer_data = {
+                    "license_plate": vehicle.license_plate,
+                    "vehicle_type": vehicle.vehicle_type,
+                    "arrived_at": vehicle.arrived_at,
+                    "paid_at": vehicle.paid_at,
+                    "amount_paid": vehicle.amount_paid,
+                    "spot": vehicle.spot
+                    }
+                
+                serializer = ExitVehicleSerializer(serializer_data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            except ObjectDoesNotExist:
+                return Response({"message": "Invalid vehicle id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+            

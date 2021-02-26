@@ -1,5 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
+from .services import calculate_amount_paid
+from datetime import datetime
 import ipdb
 
 
@@ -213,23 +215,150 @@ class TestVehicleView(TestCase):
         self.assertEqual(levels[2]['available_spots']['available_car_spots'], 1)
         self.assertEqual(response_1.status_code, 201)
 
-    def test_output_format_entry_vehicle(self):
+    
+    def test_exit_vehicle_amount_paid(self):
         client = APIClient()
 
-        output_format_entry_vehicle = {
-            "id": 1,
-            "license_plate": "AYO1029",
-            "vehicle_type": "car",
-            "arrived_at": "2021-01-25T17:16:25.727541Z",
-            "paid_at": None,
-            "amount_paid": None,
-            "spot": {
-              "id": 1,
-              "variety": "car",
-              "level_name": "floor 1"
-              }
-            }
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get token admin user
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create level
+        client.post('/api/levels/', self.level_data_1, format='json')
+
+        # create pricing
+        client.post('/api/pricings/', self.pricing_data, format='json')
+
+        # entry vehicle
+        client.post('/api/vehicles/', self.vehicle_data_1, format='json')
+
+        # exit vehicle
+        response = client.put('/api/vehicles/1/', format='json')
+
+        self.assertEqual(response.status_code, 200)
+    
+    def test_exit_vehicle_spot_null(self):
+        client = APIClient()
+
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get token admin user
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create level
+        client.post('/api/levels/', self.level_data_1, format='json')
+
+        # create pricing
+        client.post('/api/pricings/', self.pricing_data, format='json')
+
+        # entry vehicle
+        client.post('/api/vehicles/', self.vehicle_data_1, format='json')
+
+        # exit vehicle
+        response = client.put('/api/vehicles/1/', format='json')
+
+        exit_vehicle = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(exit_vehicle['spot'], None)
+    
+    def test_exit_vehicle_level_available_spots(self):
+        client = APIClient()
+
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get token admin user
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create level
+        client.post('/api/levels/', self.level_data_1, format='json')
+
+        # create pricing
+        client.post('/api/pricings/', self.pricing_data, format='json')
+
+        # entry vehicle
+        client.post('/api/vehicles/', self.vehicle_data_1, format='json')
+        client.post('/api/vehicles/', self.vehicle_data_2, format='json')
+
+        # exit vehicle
+        client.put('/api/vehicles/1/', format='json')
+
+        # get levels
+        levels = client.get('/api/levels/', format='json').json()
         
+        self.assertEqual(levels[0]['available_spots']['available_car_spots'], 1)
+
+    def test_exit_two_vehicle_level_available_spots(self):
+        client = APIClient()
+
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get token admin user
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create level
+        client.post('/api/levels/', self.level_data_1, format='json')
+
+        # create pricing
+        client.post('/api/pricings/', self.pricing_data, format='json')
+
+        # entry vehicle
+        client.post('/api/vehicles/', self.vehicle_data_1, format='json')
+        client.post('/api/vehicles/', self.vehicle_data_2, format='json')
+
+        # exit vehicle
+        client.put('/api/vehicles/1/', format='json')
+        client.put('/api/vehicles/2/', format='json')
+
+        # get levels
+        levels = client.get('/api/levels/', format='json').json()
+        
+        self.assertEqual(levels[0]['available_spots']['available_car_spots'], 2)
+        
+    def test_exit_vehicle_with_invalid_id(self):
+        client = APIClient()
+
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get token admin user
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create level
+        client.post('/api/levels/', self.level_data_1, format='json')
+
+        # create pricing
+        client.post('/api/pricings/', self.pricing_data, format='json')
+
+        # entry vehicle
+        client.post('/api/vehicles/', self.vehicle_data_1, format='json')
+        client.post('/api/vehicles/', self.vehicle_data_2, format='json')
+
+        # exit vehicle
+        client.put('/api/vehicles/1/', format='json')
+        client.put('/api/vehicles/2/', format='json')
+        response = client.put('/api/vehicles/3/', format='json')
+        
+        self.assertEqual(response.status_code, 404)
+
+    def test_function_calculate_amount_paid(self):
+        client = APIClient()
+
         # create admin user
         client.post('/api/accounts/', self.admin_data, format='json')
 
@@ -241,12 +370,11 @@ class TestVehicleView(TestCase):
         # create pricing
         client.post('/api/pricings/', self.pricing_data, format='json')
 
-        # create level
-        client.post('/api/levels/', self.level_data_1, format='json')
+        # calculate function
+        start = "2021-01-21T19:36:55.364610Z"
+        end = "2021-01-21T19:37:23.016452Z"
+        f = '%Y-%m-%dT%H:%M:%S.%fZ'
 
-        # entry vehicle
-        response = client.post('/api/vehicles/', self.vehicle_data_1, format='json')
-        vehicle = response.json()
+        value = calculate_amount_paid(datetime.strptime(start, f), datetime.strptime(end, f))
 
-        self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(vehicle, output_format_entry_vehicle)
+        self.assertEqual(value, 100)

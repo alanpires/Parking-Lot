@@ -15,3 +15,12 @@ class VehicleSerializer(serializers.Serializer):
     paid_at = serializers.CharField(read_only=True)
     amount_paid = serializers.IntegerField(read_only=True)
     spot = SpotSerializer(read_only=True)
+
+
+class ExitVehicleSerializer(serializers.Serializer):
+    license_plate = serializers.CharField()
+    vehicle_type = serializers.CharField()
+    arrived_at = serializers.CharField(read_only=True)
+    paid_at = serializers.CharField(read_only=True)
+    amount_paid = serializers.IntegerField(read_only=True)
+    spot = serializers.CharField()

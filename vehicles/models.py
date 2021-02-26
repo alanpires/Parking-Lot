@@ -10,7 +10,7 @@ class Spot(models.Model):
 class Vehicle(models.Model):
     vehicle_type = models.CharField(max_length=255)
     license_plate = models.CharField(max_length=255)
-    arrived_at = models.CharField(max_length=255, blank=True, null=True)
-    paid_at = models.CharField(max_length=255, blank=True, null=True)
+    arrived_at = models.DateTimeField(blank=True, null=True)
+    paid_at = models.DateField(blank=True, null=True)
     amount_paid = models.IntegerField(blank=True, null=True)
-    spot = models.OneToOneField(Spot, on_delete=models.CASCADE)
+    spot = models.OneToOneField(Spot, on_delete=models.SET_NULL, blank=True, null=True)
