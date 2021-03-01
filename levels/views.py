@@ -6,7 +6,6 @@ from .serializers import LevelSerializer
 from .models import Level
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-import ipdb
 
 
 class LevelView(APIView):

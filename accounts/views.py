@@ -6,7 +6,6 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User
 from .serializers import UserSerializer, UserSerializerLogin
-import ipdb
 
 
 class AccountsView(APIView):

@@ -1,12 +1,6 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
-import ipdb
 
-# Testar se somente o usuário autenticado pode criar um nível - OK
-# Testar se um usuário não autenticado pode criar um nível - OK
-# Testar se um nível que já exista é criado novamente
-# Testar se o formato de saída é o esperado
-# Testar se as vagas estão sendo preenchidas, ou seja, se o número de vagas disponíveis diminui quando os veículos entram.
 
 class TestLevelView(TestCase):
     def setUp(self):

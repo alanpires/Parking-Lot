@@ -1,7 +1,6 @@
 from django.test import TestCase
 from .models import User
 from rest_framework.test import APIClient
-import ipdb
 
 
 class TestUserModel(TestCase):

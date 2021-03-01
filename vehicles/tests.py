@@ -2,7 +2,6 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from .services import calculate_amount_paid
 from datetime import datetime
-import ipdb
 
 
 class TestVehicleView(TestCase):
@@ -67,12 +66,17 @@ class TestVehicleView(TestCase):
                 "license_plate": "AYO1031"
                 }
         
+        self.vehicle_data_5 = {
+                "vehicle_type": "bike",
+                "license_plate": "AYO1032"
+                }
+        
         self.pricing_data = {
                 "a_coefficient": 100,
 	            "b_coefficient": 100
                 }
 
-    def test_vehicle_entry(self):
+    def test_vehicle_type_car_entry(self):
         client = APIClient()
         
         # create admin user
@@ -103,6 +107,36 @@ class TestVehicleView(TestCase):
         self.assertEqual(levels[0]['available_spots']['available_car_spots'], 2)
         self.assertEqual(levels[1]['available_spots']['available_car_spots'], 0)
         self.assertEqual(levels[2]['available_spots']['available_car_spots'], 1)
+    
+    def test_vehicle_type_bike_entry(self):
+        client = APIClient()
+        
+        # create admin user
+        client.post('/api/accounts/', self.admin_data, format='json')
+
+        # get token admin user
+        token = client.post('/api/login/', self.admin_login_data, format='json').json()['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # create level admin user
+        level_1 = client.post('/api/levels/', self.level_data_1, format='json').json()
+        level_2 = client.post('/api/levels/', self.level_data_2, format='json').json()
+
+        # create pricing
+        client.post('/api/pricings/', self.pricing_data, format='json')
+
+        # create vehicle entry
+        response = client.post('/api/vehicles/', self.vehicle_data_5, format='json')
+        vehicle = response.json()
+
+        # get levels
+        levels = client.get('/api/levels/', format='json').json()
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(vehicle['id'], 1)
+        self.assertEqual(levels[0]['available_spots']['available_bike_spots'], 1)
+        self.assertEqual(levels[1]['available_spots']['available_bike_spots'], 0)
 
     def test_vehicle_entry_without_created_level_but_with_pricing(self):
         client = APIClient()
@@ -373,6 +407,8 @@ class TestVehicleView(TestCase):
         # calculate function
         start = "2021-01-21T19:36:55.364610Z"
         end = "2021-01-21T19:37:23.016452Z"
+        start_2 = "2021-01-21T19:36:55.364610Z"
+        end_2 = "2021-01-21T21:36:23.016452Z"
         f = '%Y-%m-%dT%H:%M:%S.%fZ'
 
         value = calculate_amount_paid(datetime.strptime(start, f), datetime.strptime(end, f))

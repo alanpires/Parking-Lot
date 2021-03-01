@@ -8,7 +8,7 @@ from levels.models import Level
 from pricings.models import Pricing
 from .services import select_level_priority, calculate_amount_paid, timestamp, increase_level_available_spot
 from django.core.exceptions import ObjectDoesNotExist
-import ipdb
+
 
 class VehicleView(APIView):
     def post(self, request):
@@ -90,4 +90,3 @@ class VehicleView(APIView):
                 return Response({"message": "Invalid vehicle id"}, status=status.HTTP_404_NOT_FOUND)
         
         return Response(status=status.HTTP_400_BAD_REQUEST)
-            
