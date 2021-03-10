@@ -1,0 +1,23 @@
+version: '3.3'
+services:
+    db:
+        image: postgres:latest
+        env_file: envs/dev.env
+        ports:
+            - 5432:5432
+        # volumes:
+    
+    web:
+        build: .
+        env_file: envs/dev.env
+        # command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python manage.py runserver 0.0.0.0:8000'
+        volumes:
+            - .:/code
+        
+        stdin_open: true
+        tty: true
+        ports:
+            - 8000:8000
+
+        depends_on:
+            - db
