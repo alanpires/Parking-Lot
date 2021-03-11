@@ -27,7 +27,7 @@ SECRET_KEY = '4mvyd!60)+2(99&p%0w8rt2jc^wqz5l+a66nfvj(0)4tkcygig'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['parking-lot-kenzie.herokuapp.com']
 
 AUTH_USER_MODEL = 'accounts.User'
 
