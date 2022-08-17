@@ -9,7 +9,7 @@ from pricings.models import Pricing
 from .services import select_level_priority, calculate_amount_paid, timestamp, increase_level_available_spot
 from django.core.exceptions import ObjectDoesNotExist
 
-
+# Entrada de veículos no estacionamento
 class VehicleView(APIView):
     def post(self, request):
         serializer = VehicleSerializer(data=request.data)
@@ -17,17 +17,21 @@ class VehicleView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # Selecionar nível de prioridade
         level_priority = select_level_priority(request.data['vehicle_type'])
 
         pricing = Pricing.objects.count()
 
         if level_priority is not None and pricing:
             timestamp_inicial = timestamp()
+            
+            # Cria a vaga assim que o veículo entra
             spot = Spot.objects.create(
                 variety = request.data['vehicle_type'],
                 level = level_priority
             )
 
+            # Cria o veículo e o associa a vaga
             vehicle = Vehicle.objects.get_or_create(
                 vehicle_type = request.data['vehicle_type'],
                 license_plate = request.data['license_plate'],
@@ -65,11 +69,18 @@ class VehicleView(APIView):
                 vehicle = Vehicle.objects.get(id=vehicle_id)
 
                 vehicle.paid_at = timestamp_end
+
+                # Calcula o valor a ser pago pelo veículo
                 vehicle.amount_paid = calculate_amount_paid(vehicle.arrived_at, timestamp_end)
                 vehicle.save()
 
+                # Seleciona a vaga do veículo
                 spot = Spot.objects.get(id=vehicle.spot.id)
+
+                # Aumenta uma vaga disponível no nível
                 increase_level_available_spot(vehicle.vehicle_type, spot.level)
+                
+                # Exclui o veículo da vaga
                 spot.delete()
 
                 vehicle = Vehicle.objects.get(id=vehicle_id)

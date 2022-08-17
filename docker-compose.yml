@@ -2,7 +2,7 @@ version: '3.3'
 services:
     db:
         image: postgres:latest
-        env_file: envs/dev.env
+        env_file: .env
         ports:
             - 5432:5432
         volumes:
@@ -10,7 +10,7 @@ services:
     
     migration:
         build: .
-        env_file: envs/dev.env
+        env_file: .env
         command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python manage.py migrate'
         volumes:
             - .:/code
@@ -23,7 +23,7 @@ services:
     
     web:
         build: .
-        env_file: envs/dev.env
+        env_file: .env
         command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python manage.py runserver 0.0.0.0:8000'
         volumes:
             - .:/code
@@ -38,4 +38,3 @@ services:
 
 volumes:
     pgdata:
-        external: true
