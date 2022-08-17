@@ -29,7 +29,7 @@ Sobre Usuários (`User`):
 
 - O único usuário da aplicação é o admin.
 
-`POST /api/accounts/` - criando um admin
+## `POST /api/accounts/` - criando um admin
 
 ```
 // REQUEST
@@ -50,7 +50,7 @@ Sobre Usuários (`User`):
   "username": "admin"
 ```
 
-`POST /api/login/` - obtendo um token para o usuário
+## `POST /api/login/` - obtendo um token para o usuário
 
 ```
 // REQUEST
@@ -76,7 +76,7 @@ Sobre Níveis (`Level`)
 - As informações para criação de um nível devem especificar a quantidade de vagas para cada tipo de veículo (carro e moto).
 - As informações para criação de um nível devem especificar uma fill_priority, ou seja, uma prioridade de preenchimento. Este valor será utilizado nas regras de negócio, para que o sistema consiga definir qual a próxima vaga a ser preenchida.
 
-`POST /api/levels/` - criando um novo nível
+## `POST /api/levels/` - criando um novo nível
 ```
 // REQUEST 
 // Header -> Authorization: Token <token-do-admin>
@@ -101,7 +101,7 @@ Sobre Níveis (`Level`)
 }
 ```
 
-`GET /api/levels/` - listando os níveis
+## `GET /api/levels/` - listando os níveis
 
 ```
 // RESPONSE STATUS -> HTTP 200
@@ -142,7 +142,7 @@ Onde:
 - `t` - o número de horas que o veículo permaneceu no estacionamento
 - `V` - é o valor a ser pago (em centavos)
 
-`POST /api/pricings/` - criando uma nova precificação:
+## `POST /api/pricings/` - criando uma nova precificação:
 
 ```
 // REQUEST 
@@ -167,7 +167,7 @@ Onde:
 
 Sobre Veículos (`Vehicle`)
 ------------------------------------------
-`POST /api/vehicles/` - criando um novo registro de entrada:
+## `POST /api/vehicles/` - criando um novo registro de entrada:
 
 ```
 // REQUEST
@@ -197,7 +197,7 @@ Sobre Veículos (`Vehicle`)
 - Se não houver nenhum nível ao cadastrar um registro de entrada, o sistema não poderá criar o registro de entrada no estacionamento. Nesse caso deve ser devolvida uma resposta com código `HTTP 404`.
 - Se não houver vagas disponiveis, o sistema não poderá criar registros de entrada no estacionamento. Nesse caso deve ser devolvida uma resposta com código `HTTP 404`.
 
-`PUT /api/vehicles/<int:vehicle_id>/` - registrando a saída e pagamento do veículo:
+## `PUT /api/vehicles/<int:vehicle_id>/` - registrando a saída e pagamento do veículo:
 
 ```
 // REPONSE STATUS -> HTTP 200
